@@ -1,0 +1,181 @@
+---
+title: "scDECO-Poisson-Gamma"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{scDECO-Poisson-Gamma}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(scDECO)
+```
+
+## Quick Start
+
+
+```{r}
+n <- 2500
+b.use <- c(-3,0.1)
+
+# simulate the data
+simdat <- scdeco.sim.pg(N=n, b0=b.use[1], b1=b.use[2],
+                        phi1=4, phi2=4, phi3=1/7,
+                        mu1=15, mu2=15, mu3=7,
+                        tau0=-2, tau1=0.4)
+```
+
+Parameters:
+
+* `N`: Sample size for the simulated data.
+* `b0`: The intercept coefficient of the zero-inflation parameter. 
+* `b1`: The slope coefficient of the zero-inflation parameter. 
+* `phi1`: The over-dispersion parameter of the 1st ZINB marginal.
+* `phi2`: The over-dispersion parameter of the 2nd ZINB marginal.
+* `phi3`: The over-dispersion parameter of the ZINB covariate vector. 
+* `mu1`: The mean parameter of the 1st ZINB marginal.
+* `mu2`: The mean parameter of the 2nd ZINB marginal.
+* `mu3`: The mean parameter of the ZINB covariate vector.
+* `tau0`: The intercept coefficient of the correlation parameter. 
+* `tau1`: The slope coefficient of the correlation parameter.
+
+This will simulate a 3-column matrix of $N$ rows, where the first two columns are observations and the third column is the ZINB covariate which will be used in regressing the correlation parameter of the scdeco.pg model. 
+
+```{r}
+# fit the model
+mcmc.out <- scdeco.pg(dat=simdat,
+                      b0=b.use[1], b1=b.use[2],
+                      adapt_iter=1,# 500,
+                      update_iter=1, # 500,
+                      coda_iter=10, # 5000,
+                      coda_thin=1, # 10,
+                      coda_burnin=0)# 1000)
+```
+
+Parameters:
+
+* `dat`: The 3-column matrix where the first two columns are observations and the third column is the ZINB covariate. An additional covariate can be added as a 4th column if desired.
+* `adapt_iter`: The number of adaptive iterations to run.
+* `update_iter`: The number of update iterations to run.
+* `coda_iter`: The number of MCMC iterations to run after the adapt and update.
+* `coda_thin`: The number of MCMC iterations to burn from the coda_iter iterations.
+* `coda_burnin`: The number of MCMC iterations to thin from the coda_burnin iterations.
+  
+This will return a matrix where the columns correspond to the different parameters of the model and the rows correspond to MCMC samples where the adapt, update, burn, and thin has already been incorporated. 
+
+One can obtain estimates and confidence intervals for each parameter by looking at quantiles of these MCMC samples.
+
+```{r}
+boundsmat <- cbind(mcmc.out$quantiles[,1],
+                  c(1/4, 1/4, 7, 15, 15, 7, -2, 0.4), 
+                  mcmc.out$quantiles[,c(3,5)])
+
+colnames(boundsmat) <- c("lower", "true", "est", "upper")
+
+boundsmat
+```
+
+
+
+## Model Details
+
+Let $i=1,\dots,n$ represent the number of cells in the dataset, and let $\boldsymbol{X}_1, \boldsymbol{X}_2, \boldsymbol{X}_3$ be the count-based expression levels for the three genes, with $\boldsymbol{X}_3$ being the controller gene. Let $\boldsymbol{X}_c$ be a vector containing some cellular-level factor such as resistance status or methylation level.
+
+Since technical and/or biological factors often cause expression readings to incorrectly show up as $0$, known as a dropout event, we choose to incorporate a zero-inflation parameter into the distribution of $\boldsymbol{X}_3$ and also into the joint distribution of $\boldsymbol{X}_1, \boldsymbol{X}_2$.
+
+To incorporate zero-inflation into the distribution of $\boldsymbol{X}_3$, let $p_3$ represent the probability of a dropout event striking an observation of $\boldsymbol{X}_3$.
+
+
+Then we model $\boldsymbol{X}_3$ as:
+
+
+$$
+f(x_{i3}; \mu_3, 1/\phi_3) =  (1-p_3)f_{NB}(x_{i3}; \mu_3, 1/\phi_3) + p_3\boldsymbol{1}(x_{i3}=0)
+$$
+
+Where NB is under the following mean, over-dispersion parameterization:
+
+$$
+f_{\text{NB}}(x;\mu, \alpha) = \frac{\Gamma(x + \frac{1}{\alpha})}{\Gamma(x+1)\Gamma(\frac{1}{\alpha})}\left(\frac{\frac{1}{\alpha}}{\frac{1}{\alpha}+\mu}\right)^{\frac{1}{\alpha}}\left(\frac{\mu}{\frac{1}{\alpha}+\mu}\right)^{x}
+$$
+
+which has mean $\mu$ and variance $\mu(1+\alpha\mu)$. 
+
+
+We introduce the latent variable $\boldsymbol{Z}$, which is responsible for imparting correlation between the two marginals $\boldsymbol{X}_1, \boldsymbol{X}_2$. 
+
+$$
+\boldsymbol{Z}_i \sim N_2\left(\begin{bmatrix}0 \\ 0\end{bmatrix}, \begin{bmatrix}1 & \rho_i \\ \rho_i & 1\end{bmatrix}\right)
+$$
+
+$\rho$ is made to be a function of $\boldsymbol{X}_{3}$ and $\boldsymbol{X}_c$ like so:
+
+$$
+\rho_i = (1-p_3)\tanh\left(\tau_0 + \tau_1 X_{i3} + \tau_2 X_{ic}\right) + p_3\tanh\left(\tau_0 + \tau_1 \mu_3 + \tau_2 X_{ic}\right)\boldsymbol{1}(X_{i3}=0)
+$$
+
+This shows that if $X_{i3}=0$ (and thus is possibly dropout), then we replace it with $\mu_3$ in the second term of the above sum.
+
+Now we allow the means of $\boldsymbol{X}_1, \boldsymbol{X}_2$ to depend on this latent variable $\boldsymbol{Z}$ in the following way. For $j=1,2$,
+
+$$
+X_{ij} \sim \text{Pois}\left(\text{mean}=F_{\phi_j}^{-1}\left\{Z_{ij}\right\}\mu_{j}\right)
+$$
+
+where $F_{\phi_j}$ is the $\text{Gamma}\left(\text{shape}=1/\phi_j, \text{rate}=1/\phi_j\right)$ CDF.
+
+Thus, $X_{ij}$ is a poisson random variable with a $Gamma(\text{shape}=1/\phi_j, \text{rate}=1/\mu_j\phi_j)$ mean parameter, which is equivalent to a $\text{NB}\left(\mu_{j}, 1/\phi_j\right)$ random variable, 
+
+
+To incorporate zero-inflation into the joint distribution of $\boldsymbol{X}_1, \boldsymbol{X}_2$, let $p_1$, $p_2$ represent the probability that an observation from $\boldsymbol{X}_1, \boldsymbol{X}_2$, respectively, is hit by a dropout event. Then for $j=1,2$,
+
+$$
+f(x_{ij}; \mu_j, \phi_j) =  (1-p_j)f_{\text{Pois}}\left(x_{ij}; F_{\phi_j}^{-1}\left\{Z_{ij}\right\}\mu_{j}\right) + p_j\boldsymbol{1}(x_{ij}=0)
+$$
+
+
+## Parameter Estimation
+
+Parameter estimation is achieved using a Gibbs sampler MCMC scheme through JAGS. 
+
+The priors are as follows:
+
+$$
+\begin{aligned}
+\mu_1 &\sim \text{lognormal}(\mu=0, \ \sigma^2=1)\\
+\mu_2 &\sim \text{lognormal}(\mu=0, \ \sigma^2=1)\\
+\mu_3 &\sim \text{lognormal}(\mu=0, \ \sigma^2=1)\\
+1/\phi_1 &\sim \text{Gamma}(\text{shape}=1, \ \text{rate}=0.01)\\
+1/\phi_2 &\sim \text{Gamma}(\text{shape}=1, \ \text{rate}=0.01)\\
+1/\phi_3 &\sim \text{Gamma}(\text{shape}=1, \ \text{rate}=0.01)\\
+\tau_0 & \sim  N(\mu=0, \sigma^2=4/n)\\
+\tau_1 & \sim  N(\mu=0, \sigma^2=4/n)\\
+\tau_2 & \sim  N(\mu=0, \sigma^2=4/n)\\
+\tau_3 & \sim  N(\mu=0, \sigma^2=4/n)\\
+\end{aligned}
+$$
+
+
+$p_1, p_2, p_3$ do not appear among these priors because they are all modeled as functions of their respective gene's mean like so:
+
+$$
+p_j = \frac{\exp\left\{b_0 +b_1\mu_j\right\}}{1+\exp\left\{b_0+b_1\mu_j\right\}}
+$$
+
+where the values for $b_0$, $b_1$ are decided beforehand by fitting above model using \textit{all} the genes in the dataset, but replacing $p_j$ with the empirical probability that gene $j$ is equal $0$ and replacing $\mu_j$ with the empirical mean expression of gene $j$, then estimating $\beta_0$, $\beta_1$ using nls().
+
+
+## Citations
+
+Zhen Yang, Yen-Yi Ho, Modeling Dynamic Correlation in Zero-Inflated Bivariate Count Data with Applications to Single-Cell RNA Sequencing Data, Biometrics, Volume 78, Issue 2, June 2022, Pages 766–776, https://doi.org/10.1111/biom.13457
+
+
+
+

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>scDECO-Copula</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">scDECO-Copula</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(scDECO)</span></code></pre></div>
+<div id="quick-start" class="section level2">
+<h2>Quick Start</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">2500</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>x.use <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>w.use <span class="ot">&lt;-</span> <span class="fu">runif</span>(n,<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>marginals.use <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;ZINB&quot;</span>, <span class="st">&quot;ZIGA&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co"># simulate data</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>y.use <span class="ot">&lt;-</span> <span class="fu">scdeco.sim.cop</span>(<span class="at">marginals=</span>marginals.use, <span class="at">x=</span>x.use,</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>                    <span class="at">eta1.true=</span><span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="fl">0.8</span>), <span class="at">eta2.true=</span><span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="fl">0.8</span>),</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>                    <span class="at">beta1.true=</span><span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.5</span>), <span class="at">beta2.true=</span><span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>                    <span class="at">alpha1.true=</span><span class="dv">7</span>, <span class="at">alpha2.true=</span><span class="dv">3</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>                    <span class="at">tau.true=</span><span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.2</span>, .<span class="dv">3</span>), <span class="at">w=</span>w.use)</span></code></pre></div>
+<p>Parameters:</p>
+<ul>
+<li><code>marginals</code>: The two marginals. Options are NB, ZINB, GA,
+ZIGA, Beta, ZIBEta</li>
+<li><code>x</code>: The vector (or matrix) containing the covariate
+values to be regressed for mean and rho parameters.</li>
+<li><code>eta1.true</code>: The coefficients of the 1st marginal’s
+zero-inflation parameter.</li>
+<li><code>eta2.true</code>: The coefficients of the 2nd marginal’s
+zero-inflation parameter.</li>
+<li><code>beta1.true</code>: The coefficients of the 1st marginal’s mean
+parameter.</li>
+<li><code>beta2.true</code>: The coefficients of the 2nd marginal’s mean
+parameter.</li>
+<li><code>alpha1.true</code>: The coefficient of the 1st marginal’s
+second parameter.</li>
+<li><code>alpha2.true</code>: The coefficient of the 2nd marginal’s
+second parameter.</li>
+<li><code>tau.true</code>: The coefficients of the correlation
+parameter.</li>
+<li><code>w</code>: A vector (or matrix) containing the covariate values
+to be regressed for zero-inflation parameters.</li>
+</ul>
+<p>This will simulate a 2-column matrix of <code>NROW(x)</code> rows of
+observations from the scdeco.cop model.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># fit the model</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>mcmc.out <span class="ot">&lt;-</span> <span class="fu">scdeco.cop</span>(<span class="at">y=</span>y.use, <span class="at">x=</span>x.use, <span class="at">marginals=</span>marginals.use, <span class="at">w=</span>w.use,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                       <span class="at">n.mcmc=</span><span class="dv">10</span>, <span class="at">burn=</span><span class="dv">0</span>, <span class="at">thin=</span><span class="dv">1</span>) <span class="co"># n.mcmc=5000, burn=1000, thin=10)</span></span></code></pre></div>
+<p>Parameters:</p>
+<ul>
+<li><code>y</code>: 2-column matrix with the dependent variable
+observations.</li>
+<li><code>n.mcmc</code>: The number of MCMC iterations to run.</li>
+<li><code>burn</code>: The number of MCMC iterations to burn from the
+beginning of the chain.</li>
+<li><code>thin</code>: The number of MCMC iterations to thin.</li>
+</ul>
+<p>This will return a matrix where the columns correspond to the
+different parameters of the model and the rows correspond to MCMC
+samples where the burn and thin has already been incorporated.</p>
+<p>One can obtain estimates and confidence intervals for each parameter
+by looking at quantiles of these MCMC samples.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># extract estimates and confidence intervals</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>lowerupper <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">apply</span>(mcmc.out, <span class="dv">2</span>, quantile, <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span>)))</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>estmat <span class="ot">&lt;-</span> <span class="fu">cbind</span>(lowerupper[,<span class="dv">1</span>],</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                <span class="fu">c</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="fl">0.8</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="fl">0.8</span>), <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.5</span>), <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dv">7</span>, <span class="dv">3</span>, <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.2</span>, .<span class="dv">3</span>)),</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                lowerupper[,<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)])</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">colnames</span>(estmat) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;lower&quot;</span>, <span class="st">&quot;trueval&quot;</span>, <span class="st">&quot;estval&quot;</span>, <span class="st">&quot;upper&quot;</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>estmat</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;                lower trueval      estval       upper</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; eta10  -0.1939856719    -2.0 -0.09140522  0.00000000</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; eta11  -0.0409166176     0.8  0.06360487  0.13648748</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; eta20  -0.3766966981    -2.0 -0.24726583 -0.01442134</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; eta21   0.0003105378     0.8  0.24170412  0.26726496</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; beta10  0.0414074848     1.0  0.18403327  0.46102073</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; beta11 -0.2059254076     0.5 -0.05429471 -0.01221631</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; beta20  0.0244479648     1.0  0.23491355  0.42245563</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; beta21 -0.1400359526     1.0 -0.10618625  0.02777609</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; alpha1  0.7514191332     7.0  0.85989432  0.99638170</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; alpha2  0.6853904437     3.0  0.75813568  0.98273805</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; tau0    0.0045755789    -0.2  0.15169203  0.24089221</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; tau1   -0.0515039615     0.3  0.01652694  0.12778748</span></span></code></pre></div>
+</div>
+<div id="model-details" class="section level2">
+<h2>Model Details</h2>
+<p>Allow <span class="math inline">\(\boldsymbol {Y}_1,\ldots
+,\boldsymbol {Y}_n\)</span> to be <span class="math inline">\(n\)</span>
+independent bivariate random vectors. For <span class="math inline">\(j=1,2\)</span> we assume the marginal CDF of <span class="math inline">\(\boldsymbol{Y}_{ij}\)</span> is given by <span class="math inline">\(F_j(\cdot ;\boldsymbol{\theta }_j,{\boldsymbol
+{x}}_i)\)</span> where <span class="math inline">\(\boldsymbol{\theta
+}_j\)</span> represents a set of parameters associated with <span class="math inline">\(F_j\)</span>, and <span class="math inline">\({\boldsymbol {x}}_i=(1,x_{i1},\ldots
+,x_{ip})^{\prime }\)</span> a set of covariates for the <span class="math inline">\(i\)</span>th cell. We construct the joint CDF of
+<span class="math inline">\(\boldsymbol{Y}_i\)</span> via Gaussian
+copula with covariate-dependent parameters as follows. Let <span class="math inline">\(\boldsymbol {Z}_i=(Z_{i1},Z_{i2})^{\prime
+}\)</span> be such that</p>
+<p><span class="math display">\[\boldsymbol {Z}_i \sim
+N_2{\left(\boldsymbol {0}= \def\eqcellsep{&amp;}\begin{bmatrix} 0 \\ 0
+\end{bmatrix} , \boldsymbol {R}_i = \def\eqcellsep{&amp;}\begin{bmatrix}
+1 &amp; \rho _i \\ \rho _i &amp; 1 \end{bmatrix} \right)} \]</span></p>
+<p>with</p>
+<p><span class="math display">\[ \rho _i = \text{corr}(Z_{i1},Z_{i2}) =
+\frac{\exp ({\boldsymbol {x}}_i^{\prime }\boldsymbol{\tau }) - 1}{\exp
+({\boldsymbol {x}}_i^{\prime }\boldsymbol{\tau }) + 1}\]</span> where
+<span class="math inline">\(\boldsymbol{\tau }=\left(\tau _0,\tau
+_1,\ldots ,\tau _p\right)^{\prime }\)</span>.</p>
+<p>In the marginal distributions supported by this paper (Negative
+Binomial, Gamma, and Beta), we model their mean parameter as a function
+of covariates using the log link function like so</p>
+<p><span class="math display">\[ \mu _{ij} = E\left[Y_{ij}\right] =
+\exp\left\{\boldsymbol {x}_i^{\prime
+}\boldsymbol{\beta}^{(j)}\right\}\]</span></p>
+<p>where <span class="math inline">\(\boldsymbol{\beta}^{(j)}=\left(\beta^{(j)}
+_0,\beta^{(j)} _1,\ldots ,\beta^{(j)} _p\right)^{\prime }\)</span>.</p>
+<p>and we allow the second parameter of those distributions, which we
+call <span class="math inline">\(\alpha\)</span>, to be free of
+covariates.</p>
+<p>This formulation incorporates dynamic association between <span class="math inline">\(Y_{i1}\)</span> and <span class="math inline">\(Y_{i2}\)</span>, that is, association that depends
+on covariates, through the correlation between <span class="math inline">\(Z_{i1}\)</span> and <span class="math inline">\(Z_{i2}\)</span>. We denote the joint CDF of <span class="math inline">\(\boldsymbol{Z}_{i}\)</span> by <span class="math inline">\(\boldsymbol{\Phi }_{\boldsymbol{\tau }}\)</span>
+to reflect its dependence on parameter <span class="math inline">\(\boldsymbol{\tau}\)</span>. For both discrete and
+continuous marginals, the general form of the joint CDF of <span class="math inline">\(\boldsymbol{Y}\)</span> is given by</p>
+<p><span class="math display">\[F_{\mathbf {Y}}(\mathbf
+{y}_i;\boldsymbol{\theta }_1,\boldsymbol{\theta }_2,\boldsymbol{\tau
+},{\mathbf {x}}_i) = \boldsymbol{\Phi }_{\boldsymbol{\tau }}\left(\Phi
+^{-1}[F_1(y_{i1};\boldsymbol{\theta }_1,{\mathbf
+{x}}_i)],\right.\nonumber\left. \Phi ^{-1}[F_2(y_{i2};\boldsymbol{\theta
+}_2,{\mathbf {x}}_i)]\right)\]</span></p>
+<p>where <span class="math inline">\(\Phi ^{-1}\)</span> represents the
+inverse CDF of <span class="math inline">\(N(0,1)\)</span>.</p>
+</div>
+<div id="marginal-parameterizations" class="section level2">
+<h2>Marginal Parameterizations</h2>
+<p>We use the following parameterization of the negative binomial for
+use in the marginals:</p>
+<p><span class="math display">\[
+f_{\text{NB}}(y_{ij};\mu_{ij}, \alpha_{j}) = \frac{\Gamma(y_{ij} +
+\alpha_{j})}{\Gamma(y_{ij}+1)\Gamma(\alpha_{j})}\left(\frac{\alpha_{j}}{\alpha_{j}+\mu_{ij}}\right)^{\alpha_{j}}\left(\frac{\mu_{ij}}{\alpha_{j}+\mu_{ij}}\right)^{y_{ij}}
+\]</span></p>
+<p>This has mean <span class="math inline">\(\mu_{ij}\)</span> and
+variance <span class="math inline">\(\mu_{ij}+\mu_{ij}^2/\alpha_j\)</span>.</p>
+<p>For the gamma distribution, we use the following
+parameterization:</p>
+<p><span class="math display">\[
+f(y_{ij};\mu_{ij},\alpha_{j}) = \frac{\alpha_{j} ^{\mu_{ij}\alpha_{j}
+}}{\Gamma (\mu_{ij}\alpha_{j} )}\,y_i^{\mu_{ij}\alpha_{j}
+-1}e^{-\alpha_{j} y_{ij}}
+\]</span></p>
+<p>This has mean <span class="math inline">\(\mu_{ij}\)</span> and
+variance <span class="math inline">\(\mu_{ij}/\alpha_j\)</span>.</p>
+<p>For the beta distribution, we use the following parameterization:</p>
+<p><span class="math display">\[
+f(y_{ij};\mu_{ij},\alpha_{j}) =
+\frac{\Gamma(\alpha_j)}{\Gamma(\mu_{ij}\alpha_{j})\Gamma((1-\mu_{ij})\alpha_j)}y_{ij}^{\mu_{ij}\alpha_j-1}(1-y_{ij})^{(1-\mu_{ij})\alpha_j-1}
+\]</span></p>
+<p>this has mean of <span class="math inline">\(\mu_{ij}\)</span> and
+variance <span class="math inline">\(\mu_{ij}(1-\mu_{ij})/(\alpha_{ij}+1)\)</span>.</p>
+</div>
+<div id="incorporating-zero-inflation" class="section level2">
+<h2>Incorporating Zero-inflation</h2>
+<p>In multi-omics data, dropout events occur when observations for
+certain molecules are not detected and thus recorded as zeros. For this
+reason, we incorporate zero-inflation into the above model by including
+two additional covariate-dependent parameters <span class="math inline">\(p_1\)</span> and <span class="math inline">\(p_2\)</span> which represent the probability of an
+observation from their respective marginal being zeroed-out by a dropout
+event.</p>
+<p>Thus, for a Gamma or Beta marginal, the zero-inflated PDF is given
+by</p>
+<p><span class="math display">\[
+f^{\text{zinf}}_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf {x}}_i) =
+(1-p_j)f_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf
+{x}}_i)\boldsymbol{1}(y_{ij}&gt;0) + p_j\boldsymbol{1}(y_{ij}=0)
+\]</span></p>
+<p>and for a NB marginal, the zero-inflated PDF is given by:</p>
+<p><span class="math display">\[
+f^{\text{zinf}}_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf {x}}_i) =
+(1-p_j)f_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf {x}}_i) +
+p_j\boldsymbol{1}(y_{ij}=0)
+\]</span></p>
+<p>We allow <span class="math inline">\(p_1\)</span>, <span class="math inline">\(p_2\)</span> to be dependent on a different set of
+covariates than the <span class="math inline">\(\boldsymbol{x}\)</span>
+used in the previous section, because often zero-inflation is affected
+by different covariates than the marginal mean and/or correlation
+parameter is. We will call this new set of covariates <span class="math inline">\({\boldsymbol {w}}_i=(1,w_{i1},\ldots
+,w_{ik})^{\prime }\)</span> and it will be tied to <span class="math inline">\(p_1\)</span>, <span class="math inline">\(p_2\)</span> in the following way:</p>
+<p><span class="math display">\[
+p_{ij} =
+\frac{1}{1+\exp\left\{\boldsymbol{w}_i^{\prime}\boldsymbol{\eta^{(j)}}\right\}}
+\]</span></p>
+<p>where <span class="math inline">\(\boldsymbol{\eta}^{(j)}=\left(\eta^{(j)}
+_0,\eta^{(j)} _1,\ldots ,\eta^{(j)} _q\right)^{\prime }\)</span>.</p>
+</div>
+<div id="parameter-estimation" class="section level2">
+<h2>Parameter Estimation</h2>
+<p>Parameter estimation is achieved using an adaptive MCMC approach
+involving a Metropolis scheme, and using a one-margin-at-a-time
+approach. For more details please refer to the paper.</p>
+</div>
+<div id="citations" class="section level2">
+<h2>Citations</h2>
+<p>Zichen Ma, Shannon W. Davis, Yen-Yi Ho, Flexible Copula Model for
+Integrating Correlated Multi-Omics Data from Single-Cell Experiments,
+Biometrics, Volume 79, Issue 2, June 2023, Pages 1559–1572, <a href="https://doi.org/10.1111/biom.13701" class="uri">https://doi.org/10.1111/biom.13701</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

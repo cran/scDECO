@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>scDECO-Poisson-Gamma</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">scDECO-Poisson-Gamma</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(scDECO)</span></code></pre></div>
+<div id="quick-start" class="section level2">
+<h2>Quick Start</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">2500</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>b.use <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">3</span>,<span class="fl">0.1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># simulate the data</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>simdat <span class="ot">&lt;-</span> <span class="fu">scdeco.sim.pg</span>(<span class="at">N=</span>n, <span class="at">b0=</span>b.use[<span class="dv">1</span>], <span class="at">b1=</span>b.use[<span class="dv">2</span>],</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                        <span class="at">phi1=</span><span class="dv">4</span>, <span class="at">phi2=</span><span class="dv">4</span>, <span class="at">phi3=</span><span class="dv">1</span><span class="sc">/</span><span class="dv">7</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                        <span class="at">mu1=</span><span class="dv">15</span>, <span class="at">mu2=</span><span class="dv">15</span>, <span class="at">mu3=</span><span class="dv">7</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>                        <span class="at">tau0=</span><span class="sc">-</span><span class="dv">2</span>, <span class="at">tau1=</span><span class="fl">0.4</span>)</span></code></pre></div>
+<p>Parameters:</p>
+<ul>
+<li><code>N</code>: Sample size for the simulated data.</li>
+<li><code>b0</code>: The intercept coefficient of the zero-inflation
+parameter.</li>
+<li><code>b1</code>: The slope coefficient of the zero-inflation
+parameter.</li>
+<li><code>phi1</code>: The over-dispersion parameter of the 1st ZINB
+marginal.</li>
+<li><code>phi2</code>: The over-dispersion parameter of the 2nd ZINB
+marginal.</li>
+<li><code>phi3</code>: The over-dispersion parameter of the ZINB
+covariate vector.</li>
+<li><code>mu1</code>: The mean parameter of the 1st ZINB marginal.</li>
+<li><code>mu2</code>: The mean parameter of the 2nd ZINB marginal.</li>
+<li><code>mu3</code>: The mean parameter of the ZINB covariate
+vector.</li>
+<li><code>tau0</code>: The intercept coefficient of the correlation
+parameter.</li>
+<li><code>tau1</code>: The slope coefficient of the correlation
+parameter.</li>
+</ul>
+<p>This will simulate a 3-column matrix of <span class="math inline">\(N\)</span> rows, where the first two columns are
+observations and the third column is the ZINB covariate which will be
+used in regressing the correlation parameter of the scdeco.pg model.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># fit the model</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>mcmc.out <span class="ot">&lt;-</span> <span class="fu">scdeco.pg</span>(<span class="at">dat=</span>simdat,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                      <span class="at">b0=</span>b.use[<span class="dv">1</span>], <span class="at">b1=</span>b.use[<span class="dv">2</span>],</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>                      <span class="at">adapt_iter=</span><span class="dv">1</span>,<span class="co"># 500,</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>                      <span class="at">update_iter=</span><span class="dv">1</span>, <span class="co"># 500,</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>                      <span class="at">coda_iter=</span><span class="dv">10</span>, <span class="co"># 5000,</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>                      <span class="at">coda_thin=</span><span class="dv">1</span>, <span class="co"># 10,</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>                      <span class="at">coda_burnin=</span><span class="dv">0</span>)<span class="co"># 1000)</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; Compiling model graph</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;    Resolving undeclared variables</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;    Allocating nodes</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; Graph information:</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;    Observed stochastic nodes: 7500</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;    Unobserved stochastic nodes: 12508</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;    Total graph size: 85195</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Initializing model</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; Warning in jags.model(IndZ.spec, data = jags_data, n.adapt = adapt_iter, :</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; Adaptation incomplete</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; </span><span class="al">NOTE</span><span class="co">: Stopping adaptation</span></span></code></pre></div>
+<p>Parameters:</p>
+<ul>
+<li><code>dat</code>: The 3-column matrix where the first two columns
+are observations and the third column is the ZINB covariate. An
+additional covariate can be added as a 4th column if desired.</li>
+<li><code>adapt_iter</code>: The number of adaptive iterations to
+run.</li>
+<li><code>update_iter</code>: The number of update iterations to
+run.</li>
+<li><code>coda_iter</code>: The number of MCMC iterations to run after
+the adapt and update.</li>
+<li><code>coda_thin</code>: The number of MCMC iterations to burn from
+the coda_iter iterations.</li>
+<li><code>coda_burnin</code>: The number of MCMC iterations to thin from
+the coda_burnin iterations.</li>
+</ul>
+<p>This will return a matrix where the columns correspond to the
+different parameters of the model and the rows correspond to MCMC
+samples where the adapt, update, burn, and thin has already been
+incorporated.</p>
+<p>One can obtain estimates and confidence intervals for each parameter
+by looking at quantiles of these MCMC samples.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>boundsmat <span class="ot">&lt;-</span> <span class="fu">cbind</span>(mcmc.out<span class="sc">$</span>quantiles[,<span class="dv">1</span>],</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>                  <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>, <span class="dv">7</span>, <span class="dv">15</span>, <span class="dv">15</span>, <span class="dv">7</span>, <span class="sc">-</span><span class="dv">2</span>, <span class="fl">0.4</span>), </span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                  mcmc.out<span class="sc">$</span>quantiles[,<span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">5</span>)])</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">colnames</span>(boundsmat) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;lower&quot;</span>, <span class="st">&quot;true&quot;</span>, <span class="st">&quot;est&quot;</span>, <span class="st">&quot;upper&quot;</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>boundsmat</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;                  lower  true        est       upper</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; inverphi[1]  0.9843169  0.25  1.0662923  5.82024138</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; inverphi[2]  0.9247351  0.25  1.1927816  2.33034870</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; inverphi3    4.5388303  7.00  5.4512712  6.47353934</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; mu[1]       15.9797522 15.00 23.4592553 25.10481958</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; mu[2]       20.7173956 15.00 24.8036386 27.20988191</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; mu3          6.5832391  7.00  6.9110345  7.21954137</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; tau0        -1.5473020 -2.00 -0.5683481 -0.05878521</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; tau1         0.0600569  0.40  0.1137417  0.25795315</span></span></code></pre></div>
+</div>
+<div id="model-details" class="section level2">
+<h2>Model Details</h2>
+<p>Let <span class="math inline">\(i=1,\dots,n\)</span> represent the
+number of cells in the dataset, and let <span class="math inline">\(\boldsymbol{X}_1, \boldsymbol{X}_2,
+\boldsymbol{X}_3\)</span> be the count-based expression levels for the
+three genes, with <span class="math inline">\(\boldsymbol{X}_3\)</span>
+being the controller gene. Let <span class="math inline">\(\boldsymbol{X}_c\)</span> be a vector containing
+some cellular-level factor such as resistance status or methylation
+level.</p>
+<p>Since technical and/or biological factors often cause expression
+readings to incorrectly show up as <span class="math inline">\(0\)</span>, known as a dropout event, we choose to
+incorporate a zero-inflation parameter into the distribution of <span class="math inline">\(\boldsymbol{X}_3\)</span> and also into the joint
+distribution of <span class="math inline">\(\boldsymbol{X}_1,
+\boldsymbol{X}_2\)</span>.</p>
+<p>To incorporate zero-inflation into the distribution of <span class="math inline">\(\boldsymbol{X}_3\)</span>, let <span class="math inline">\(p_3\)</span> represent the probability of a
+dropout event striking an observation of <span class="math inline">\(\boldsymbol{X}_3\)</span>.</p>
+<p>Then we model <span class="math inline">\(\boldsymbol{X}_3\)</span>
+as:</p>
+<p><span class="math display">\[
+f(x_{i3}; \mu_3, 1/\phi_3) =  (1-p_3)f_{NB}(x_{i3}; \mu_3, 1/\phi_3) +
+p_3\boldsymbol{1}(x_{i3}=0)
+\]</span></p>
+<p>Where NB is under the following mean, over-dispersion
+parameterization:</p>
+<p><span class="math display">\[
+f_{\text{NB}}(x;\mu, \alpha) = \frac{\Gamma(x +
+\frac{1}{\alpha})}{\Gamma(x+1)\Gamma(\frac{1}{\alpha})}\left(\frac{\frac{1}{\alpha}}{\frac{1}{\alpha}+\mu}\right)^{\frac{1}{\alpha}}\left(\frac{\mu}{\frac{1}{\alpha}+\mu}\right)^{x}
+\]</span></p>
+<p>which has mean <span class="math inline">\(\mu\)</span> and variance
+<span class="math inline">\(\mu(1+\alpha\mu)\)</span>.</p>
+<p>We introduce the latent variable <span class="math inline">\(\boldsymbol{Z}\)</span>, which is responsible for
+imparting correlation between the two marginals <span class="math inline">\(\boldsymbol{X}_1, \boldsymbol{X}_2\)</span>.</p>
+<p><span class="math display">\[
+\boldsymbol{Z}_i \sim N_2\left(\begin{bmatrix}0 \\ 0\end{bmatrix},
+\begin{bmatrix}1 &amp; \rho_i \\ \rho_i &amp; 1\end{bmatrix}\right)
+\]</span></p>
+<p><span class="math inline">\(\rho\)</span> is made to be a function of
+<span class="math inline">\(\boldsymbol{X}_{3}\)</span> and <span class="math inline">\(\boldsymbol{X}_c\)</span> like so:</p>
+<p><span class="math display">\[
+\rho_i = (1-p_3)\tanh\left(\tau_0 + \tau_1 X_{i3} + \tau_2 X_{ic}\right)
++ p_3\tanh\left(\tau_0 + \tau_1 \mu_3 + \tau_2
+X_{ic}\right)\boldsymbol{1}(X_{i3}=0)
+\]</span></p>
+<p>This shows that if <span class="math inline">\(X_{i3}=0\)</span> (and
+thus is possibly dropout), then we replace it with <span class="math inline">\(\mu_3\)</span> in the second term of the above
+sum.</p>
+<p>Now we allow the means of <span class="math inline">\(\boldsymbol{X}_1, \boldsymbol{X}_2\)</span> to
+depend on this latent variable <span class="math inline">\(\boldsymbol{Z}\)</span> in the following way. For
+<span class="math inline">\(j=1,2\)</span>,</p>
+<p><span class="math display">\[
+X_{ij} \sim
+\text{Pois}\left(\text{mean}=F_{\phi_j}^{-1}\left\{Z_{ij}\right\}\mu_{j}\right)
+\]</span></p>
+<p>where <span class="math inline">\(F_{\phi_j}\)</span> is the <span class="math inline">\(\text{Gamma}\left(\text{shape}=1/\phi_j,
+\text{rate}=1/\phi_j\right)\)</span> CDF.</p>
+<p>Thus, <span class="math inline">\(X_{ij}\)</span> is a poisson random
+variable with a <span class="math inline">\(Gamma(\text{shape}=1/\phi_j,
+\text{rate}=1/\mu_j\phi_j)\)</span> mean parameter, which is equivalent
+to a <span class="math inline">\(\text{NB}\left(\mu_{j},
+1/\phi_j\right)\)</span> random variable,</p>
+<p>To incorporate zero-inflation into the joint distribution of <span class="math inline">\(\boldsymbol{X}_1, \boldsymbol{X}_2\)</span>, let
+<span class="math inline">\(p_1\)</span>, <span class="math inline">\(p_2\)</span> represent the probability that an
+observation from <span class="math inline">\(\boldsymbol{X}_1,
+\boldsymbol{X}_2\)</span>, respectively, is hit by a dropout event. Then
+for <span class="math inline">\(j=1,2\)</span>,</p>
+<p><span class="math display">\[
+f(x_{ij}; \mu_j, \phi_j) =  (1-p_j)f_{\text{Pois}}\left(x_{ij};
+F_{\phi_j}^{-1}\left\{Z_{ij}\right\}\mu_{j}\right) +
+p_j\boldsymbol{1}(x_{ij}=0)
+\]</span></p>
+</div>
+<div id="parameter-estimation" class="section level2">
+<h2>Parameter Estimation</h2>
+<p>Parameter estimation is achieved using a Gibbs sampler MCMC scheme
+through JAGS.</p>
+<p>The priors are as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mu_1 &amp;\sim \text{lognormal}(\mu=0, \ \sigma^2=1)\\
+\mu_2 &amp;\sim \text{lognormal}(\mu=0, \ \sigma^2=1)\\
+\mu_3 &amp;\sim \text{lognormal}(\mu=0, \ \sigma^2=1)\\
+1/\phi_1 &amp;\sim \text{Gamma}(\text{shape}=1, \ \text{rate}=0.01)\\
+1/\phi_2 &amp;\sim \text{Gamma}(\text{shape}=1, \ \text{rate}=0.01)\\
+1/\phi_3 &amp;\sim \text{Gamma}(\text{shape}=1, \ \text{rate}=0.01)\\
+\tau_0 &amp; \sim  N(\mu=0, \sigma^2=4/n)\\
+\tau_1 &amp; \sim  N(\mu=0, \sigma^2=4/n)\\
+\tau_2 &amp; \sim  N(\mu=0, \sigma^2=4/n)\\
+\tau_3 &amp; \sim  N(\mu=0, \sigma^2=4/n)\\
+\end{aligned}
+\]</span></p>
+<p><span class="math inline">\(p_1, p_2, p_3\)</span> do not appear
+among these priors because they are all modeled as functions of their
+respective gene’s mean like so:</p>
+<p><span class="math display">\[
+p_j = \frac{\exp\left\{b_0
++b_1\mu_j\right\}}{1+\exp\left\{b_0+b_1\mu_j\right\}}
+\]</span></p>
+<p>where the values for <span class="math inline">\(b_0\)</span>, <span class="math inline">\(b_1\)</span> are decided beforehand by fitting
+above model using the genes in the dataset, but replacing <span class="math inline">\(p_j\)</span> with the empirical probability that
+gene <span class="math inline">\(j\)</span> is equal <span class="math inline">\(0\)</span> and replacing <span class="math inline">\(\mu_j\)</span> with the empirical mean expression
+of gene <span class="math inline">\(j\)</span>, then estimating <span class="math inline">\(\beta_0\)</span>, <span class="math inline">\(\beta_1\)</span> using nls().</p>
+</div>
+<div id="citations" class="section level2">
+<h2>Citations</h2>
+<p>Zhen Yang, Yen-Yi Ho, Modeling Dynamic Correlation in Zero-Inflated
+Bivariate Count Data with Applications to Single-Cell RNA Sequencing
+Data, Biometrics, Volume 78, Issue 2, June 2022, Pages 766–776, <a href="https://doi.org/10.1111/biom.13457" class="uri">https://doi.org/10.1111/biom.13457</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

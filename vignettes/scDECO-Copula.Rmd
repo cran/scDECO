@@ -1,0 +1,187 @@
+---
+title: "scDECO-Copula"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{scDECO-Copula}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(scDECO)
+```
+
+
+## Quick Start
+
+
+
+```{r}
+n <- 2500
+
+x.use <- rnorm(n)
+w.use <- runif(n,-1,1)
+marginals.use <- c("ZINB", "ZIGA")
+
+# simulate data
+y.use <- scdeco.sim.cop(marginals=marginals.use, x=x.use,
+                    eta1.true=c(-2, 0.8), eta2.true=c(-2, 0.8),
+                    beta1.true=c(1, 0.5), beta2.true=c(1, 1),
+                    alpha1.true=7, alpha2.true=3,
+                    tau.true=c(-0.2, .3), w=w.use)
+```
+
+Parameters:
+
+* `marginals`: The two marginals. Options are NB, ZINB, GA, ZIGA, Beta, ZIBEta
+* `x`: The vector (or matrix) containing the covariate values to be regressed for mean and rho parameters.
+* `eta1.true`: The coefficients of the 1st marginal's zero-inflation parameter. 
+* `eta2.true`: The coefficients of the 2nd marginal's zero-inflation parameter. 
+* `beta1.true`: The coefficients of the 1st marginal's mean parameter. 
+* `beta2.true`: The coefficients of the 2nd marginal's mean parameter. 
+* `alpha1.true`: The coefficient of the 1st marginal's second parameter. 
+* `alpha2.true`: The coefficient of the 2nd marginal's second parameter.
+* `tau.true`: The coefficients of the correlation parameter. 
+* `w`: A vector (or matrix) containing the covariate values to be regressed for zero-inflation parameters.
+
+This will simulate a 2-column matrix of `NROW(x)` rows of observations from the scdeco.cop model.
+
+
+```{r}
+# fit the model
+mcmc.out <- scdeco.cop(y=y.use, x=x.use, marginals=marginals.use, w=w.use,
+                       n.mcmc=10, burn=0, thin=1) # n.mcmc=5000, burn=1000, thin=10)
+```
+
+Parameters:
+
+* `y`: 2-column matrix with the dependent variable observations.
+* `n.mcmc`: The number of MCMC iterations to run.
+* `burn`: The number of MCMC iterations to burn from the beginning of the chain.
+* `thin`: The number of MCMC iterations to thin.
+
+This will return a matrix where the columns correspond to the different parameters of the model and the rows correspond to MCMC samples where the burn and thin has already been incorporated. 
+
+One can obtain estimates and confidence intervals for each parameter by looking at quantiles of these MCMC samples.
+
+```{r}
+# extract estimates and confidence intervals
+lowerupper <- t(apply(mcmc.out, 2, quantile, c(0.025, 0.5, 0.975)))
+estmat <- cbind(lowerupper[,1],
+                c(c(-2, 0.8), c(-2, 0.8), c(1, 0.5), c(1, 1), 7, 3, c(-0.2, .3)),
+                lowerupper[,c(2,3)])
+colnames(estmat) <- c("lower", "trueval", "estval", "upper")
+estmat
+```
+
+
+## Model Details
+
+Allow $\boldsymbol {Y}_1,\ldots ,\boldsymbol {Y}_n$ to be $n$ independent bivariate random vectors. For $j=1,2$ we assume the marginal CDF of $\boldsymbol{Y}_{ij}$ is given by $F_j(\cdot ;\boldsymbol{\theta }_j,{\boldsymbol {x}}_i)$ where $\boldsymbol{\theta }_j$ represents a set of parameters associated with $F_j$, and ${\boldsymbol {x}}_i=(1,x_{i1},\ldots ,x_{ip})^{\prime }$ a set of covariates for the $i$th cell. We construct the joint CDF of $\boldsymbol{Y}_i$ via Gaussian copula with covariate-dependent parameters as follows. Let $\boldsymbol {Z}_i=(Z_{i1},Z_{i2})^{\prime }$ be such that 
+
+$$\boldsymbol {Z}_i \sim N_2{\left(\boldsymbol {0}= \def\eqcellsep{&}\begin{bmatrix} 0 \\ 0 \end{bmatrix} , \boldsymbol {R}_i = \def\eqcellsep{&}\begin{bmatrix} 1 & \rho _i \\ \rho _i & 1 \end{bmatrix} \right)} $$
+
+with
+
+$$ \rho _i = \text{corr}(Z_{i1},Z_{i2}) = \frac{\exp ({\boldsymbol {x}}_i^{\prime }\boldsymbol{\tau }) - 1}{\exp ({\boldsymbol {x}}_i^{\prime }\boldsymbol{\tau }) + 1}$$
+where $\boldsymbol{\tau }=\left(\tau _0,\tau _1,\ldots ,\tau _p\right)^{\prime }$.
+
+
+In the marginal distributions supported by this paper (Negative Binomial, Gamma, and Beta), we model their mean parameter as a function of covariates using the log link function like so
+
+$$ \mu _{ij} = E\left[Y_{ij}\right] = \exp\left\{\boldsymbol {x}_i^{\prime }\boldsymbol{\beta}^{(j)}\right\}$$
+
+where $\boldsymbol{\beta}^{(j)}=\left(\beta^{(j)} _0,\beta^{(j)} _1,\ldots ,\beta^{(j)} _p\right)^{\prime }$.
+
+and we allow the second parameter of those distributions, which we call $\alpha$, to be free of covariates.
+
+
+This formulation incorporates dynamic association between $Y_{i1}$ and $Y_{i2}$, that is, association that depends on covariates, through the correlation between $Z_{i1}$ and $Z_{i2}$. We denote the joint CDF of $\boldsymbol{Z}_{i}$ by $\boldsymbol{\Phi }_{\boldsymbol{\tau }}$ to reflect its dependence on parameter $\boldsymbol{\tau}$. For both discrete and continuous marginals, the general form of the joint CDF of $\boldsymbol{Y}$ is given by
+
+$$F_{\mathbf {Y}}(\mathbf {y}_i;\boldsymbol{\theta }_1,\boldsymbol{\theta }_2,\boldsymbol{\tau },{\mathbf {x}}_i) = \boldsymbol{\Phi }_{\boldsymbol{\tau }}\left(\Phi ^{-1}[F_1(y_{i1};\boldsymbol{\theta }_1,{\mathbf {x}}_i)],\right.\nonumber\left. \Phi ^{-1}[F_2(y_{i2};\boldsymbol{\theta }_2,{\mathbf {x}}_i)]\right)$$
+
+where $\Phi ^{-1}$ represents the inverse CDF of $N(0,1)$.
+
+
+## Marginal Parameterizations
+
+We use the following parameterization of the negative binomial for use in the marginals:
+
+$$
+f_{\text{NB}}(y_{ij};\mu_{ij}, \alpha_{j}) = \frac{\Gamma(y_{ij} + \alpha_{j})}{\Gamma(y_{ij}+1)\Gamma(\alpha_{j})}\left(\frac{\alpha_{j}}{\alpha_{j}+\mu_{ij}}\right)^{\alpha_{j}}\left(\frac{\mu_{ij}}{\alpha_{j}+\mu_{ij}}\right)^{y_{ij}}
+$$
+
+This has mean $\mu_{ij}$ and variance $\mu_{ij}+\mu_{ij}^2/\alpha_j$.
+
+
+For the gamma distribution, we use the following parameterization:
+
+$$
+f(y_{ij};\mu_{ij},\alpha_{j}) = \frac{\alpha_{j} ^{\mu_{ij}\alpha_{j} }}{\Gamma (\mu_{ij}\alpha_{j} )}\,y_i^{\mu_{ij}\alpha_{j} -1}e^{-\alpha_{j} y_{ij}}
+$$
+
+This has mean $\mu_{ij}$ and variance $\mu_{ij}/\alpha_j$.
+
+
+For the beta distribution, we use the following parameterization:
+
+
+$$
+f(y_{ij};\mu_{ij},\alpha_{j}) = \frac{\Gamma(\alpha_j)}{\Gamma(\mu_{ij}\alpha_{j})\Gamma((1-\mu_{ij})\alpha_j)}y_{ij}^{\mu_{ij}\alpha_j-1}(1-y_{ij})^{(1-\mu_{ij})\alpha_j-1}
+$$
+
+this has mean of $\mu_{ij}$ and variance $\mu_{ij}(1-\mu_{ij})/(\alpha_{ij}+1)$.
+
+
+
+## Incorporating Zero-inflation
+
+In multi-omics data, dropout events occur when observations for certain molecules are not detected and thus recorded as zeros. For this reason, we incorporate zero-inflation into the above model by including two additional covariate-dependent parameters $p_1$ and $p_2$ which represent the probability of an observation from their respective marginal being zeroed-out by a dropout event.
+
+Thus, for a Gamma or Beta marginal, the zero-inflated PDF is given by
+
+$$
+f^{\text{zinf}}_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf {x}}_i) = (1-p_j)f_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf {x}}_i)\boldsymbol{1}(y_{ij}>0) + p_j\boldsymbol{1}(y_{ij}=0)
+$$
+
+and for a NB marginal, the zero-inflated PDF is given by:
+
+$$
+f^{\text{zinf}}_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf {x}}_i) = (1-p_j)f_j(y_{ij};\boldsymbol{\theta }_j,{\mathbf {x}}_i) + p_j\boldsymbol{1}(y_{ij}=0)
+$$
+
+
+We allow $p_1$, $p_2$ to be dependent on a different set of covariates than the $\boldsymbol{x}$ used in the previous section, because often zero-inflation is affected by different covariates than the marginal mean and/or correlation parameter is. We will call this new set of covariates ${\boldsymbol {w}}_i=(1,w_{i1},\ldots ,w_{ik})^{\prime }$ and it will be tied to $p_1$, $p_2$ in the following way:
+
+$$
+p_{ij} = \frac{1}{1+\exp\left\{\boldsymbol{w}_i^{\prime}\boldsymbol{\eta^{(j)}}\right\}}
+$$
+
+where $\boldsymbol{\eta}^{(j)}=\left(\eta^{(j)} _0,\eta^{(j)} _1,\ldots ,\eta^{(j)} _q\right)^{\prime }$.
+
+
+
+
+
+
+## Parameter Estimation
+
+Parameter estimation is achieved using an adaptive MCMC approach involving a Metropolis scheme, and using a one-margin-at-a-time approach. For more details please refer to the paper.
+
+
+## Citations
+
+Zichen Ma, Shannon W. Davis, Yen-Yi Ho, Flexible Copula Model for Integrating Correlated Multi-Omics Data from Single-Cell Experiments, Biometrics, Volume 79, Issue 2, June 2023, Pages 1559–1572, https://doi.org/10.1111/biom.13701
+
+
+
+
+
+
