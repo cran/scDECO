@@ -7,6 +7,8 @@
 #' @param n.mcmc number of mcmc iterations to run
 #' @param burn how many of the mcmc iterations to burn
 #' @param thin how much to thin the mcmc iterations
+#' @param offset1 (optional) offset for link(mu1)
+#' @param offset2 (optional) offset for link(mu2)
 #'
 #' @import msm
 #'
@@ -45,9 +47,26 @@
 #' colnames(estmat) <- c("lower", "trueval", "estval", "upper")
 #' estmat
 #'
-scdeco.cop <- function(y,x,marginals,w=NULL, n.mcmc=5000, burn=1000, thin=10){
+scdeco.cop <- function(y,x,marginals,w=NULL, n.mcmc=10000, burn=1000, thin=1, offset1 = NULL, offset2 = NULL){
 
   n = nrow(y)
+  
+  if (length(offset1) != n){
+    if (is.null(offset1)){
+      offset1 <- rep(0, n)
+    } else {
+      stop("offset1 must be NULL or have same length as y")
+    }
+  }
+  
+  if (length(offset2) != n){
+    if (is.null(offset2)){
+      offset2 <- rep(0, n)
+    } else {
+      stop("offset2 must be NULL or have same length as y")
+    }
+  }
+  
 
   if ((length(w)==0) && (is.null(w))){
     w <- runif(n)
@@ -86,22 +105,38 @@ scdeco.cop <- function(y,x,marginals,w=NULL, n.mcmc=5000, burn=1000, thin=10){
   d = ncol(x)
   d.w <- ncol(w)
 
-
   alpha1.update <- alphafun_finder(marginals[1])
   alpha2.update <- alphafun_finder(marginals[2])
 
   z1.update <- zupdate_finder(marginals[1])
   z2.update <- zupdate_finder(marginals[2])
-
+  
+  invlink_start1 <- meanlink_finder_inv(marginals[1])
+  invlink_start2 <- meanlink_finder_inv(marginals[2])
+  
+  link_start1 <- meanlink_finder(marginals[1])
+  link_start2 <- meanlink_finder(marginals[2])
+  
 
   beta1 = beta2 = tau = matrix(0,n.mcmc,d)
+  
+  beta1[, 1] <- invlink_start1(mean(y[,1])) - mean(offset1)
+  beta2[, 1] <- invlink_start2(mean(y[,2])) - mean(offset2)
+  
+  p1_temp <- 0.25*mean(y[,1]==0) + 0.01
+  p2_temp <- 0.25*mean(y[,2]==0) + 0.01
+  
+  
   alpha1 = alpha2 = rep(1,n.mcmc)
   eta1 = matrix(0,n.mcmc,d.w)
+  eta1[,1] <- log(p1_temp/(1-p1_temp))
   p1 = c(exp(w%*%(eta1[1,]))/(1+exp(w%*%(eta1[1,]))))
   eta2 = matrix(0,n.mcmc,d.w)
+  eta2[,1] <- log(p2_temp/(1-p2_temp))  
   p2 = c(exp(w%*%(eta2[1,]))/(1+exp(w%*%(eta2[1,]))))
-
-  mu1 = mu2 = c(exp(x%*%(beta1[1,])))
+  
+  mu1 = c(link_start1(x%*%(beta1[1,]) + offset1))
+  mu2 = c(link_start2(x%*%(beta2[1,]) + offset2))
   rho = c((exp(x%*%(tau[1,]))-1)/(1+exp(x%*%(tau[1,]))))
   z = matrix(rnorm(n*2),n,2)%*%chol(cor(y))
 
@@ -117,7 +152,7 @@ scdeco.cop <- function(y,x,marginals,w=NULL, n.mcmc=5000, burn=1000, thin=10){
   # Loop n.mcmc times:
   for(i in 2:n.mcmc){
     beta1.mcmc = beta.update(marginals[1],beta1[1:(i-1),],y[,1],x,z[,2],mu1,
-                             alpha1[i-1],p1,rho)
+                             alpha1[i-1],p1,rho,offset1)
     beta1[i,] = beta1.mcmc$beta
     mu1 = beta1.mcmc$mu
 
@@ -132,7 +167,7 @@ scdeco.cop <- function(y,x,marginals,w=NULL, n.mcmc=5000, burn=1000, thin=10){
     z[,1] = z1.update(y[,1],z[,2],mu1,alpha1[i],p1,rho)
 
     beta2.mcmc = beta.update(marginals[2],beta2[1:(i-1),],y[,2],x,z[,1],mu2,
-                             alpha2[i-1],p2,rho)
+                             alpha2[i-1],p2,rho,offset2)
     beta2[i,] = beta2.mcmc$beta
     mu2 = beta2.mcmc$mu
 
@@ -149,8 +184,8 @@ scdeco.cop <- function(y,x,marginals,w=NULL, n.mcmc=5000, burn=1000, thin=10){
     tau[i,] = tau.mcmc$tau
     rho = tau.mcmc$rho
   }
-  # samp = seq(burn+1,n.mcmc,by=thin)
-  mcmc.out = cbind(eta1,eta2,beta1,beta2,alpha1,alpha2,tau)#[samp,]
+  samp = seq(burn+1,n.mcmc,by=thin)
+  mcmc.out = cbind(eta1,eta2,beta1,beta2,alpha1,alpha2,tau)[samp,]
 
 
   colnames(mcmc.out) = c(paste0("eta1",0:(ncol(eta1)-1)), paste0("eta2",0:(ncol(eta2)-1)),
@@ -279,6 +314,19 @@ meanlink_finder <- function(marginal){
 }
 
 
+meanlink_finder_inv <- function(marginal){
+  
+  if (marginal %in% c("Beta","ZIBeta")){
+    meanlink_inv <- function(x){log(x/(1-x))}
+  } else {
+    meanlink_inv <- function(x){log(x)}
+  }
+  
+  return(meanlink_inv)
+  
+}
+
+
 
 
 
@@ -347,7 +395,7 @@ llike.Beta = function(y,z,mu,alpha,p,rho){
 
 
 
-beta.update = function(marginal,beta,y,x,z,mu.old,alpha,p,rho,B=200,h=200){
+beta.update = function(marginal,beta,y,x,z,mu.old,alpha,p,rho,offset=0,B=200,h=200){
 
   linkfun <- meanlink_finder(marginal)
   llike <- llike_finder(marginal)
@@ -361,7 +409,7 @@ beta.update = function(marginal,beta,y,x,z,mu.old,alpha,p,rho,B=200,h=200){
   } else {cov.beta = cov(beta[(it-h+1):it,]) + .0001*diag(d)}
   beta.star = beta.old + c(rnorm(d)%*%chol(cov.beta))
 
-  mu.star = c(linkfun(x%*%beta.star))
+  mu.star = c(linkfun(x%*%beta.star + offset))
 
   log.r = llike(y,z,mu.star,alpha,p,rho) +
     sum(dnorm(beta.star,0,100,log=T)) -

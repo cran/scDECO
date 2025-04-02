@@ -4,7 +4,17 @@
 \alias{scdeco.cop}
 \title{Copula dynamic correlation fitting function}
 \usage{
-scdeco.cop(y, x, marginals, w = NULL, n.mcmc = 5000, burn = 1000, thin = 10)
+scdeco.cop(
+  y,
+  x,
+  marginals,
+  w = NULL,
+  n.mcmc = 10000,
+  burn = 1000,
+  thin = 1,
+  offset1 = NULL,
+  offset2 = NULL
+)
 }
 \arguments{
 \item{y}{2-column matrix of observations}
@@ -20,6 +30,10 @@ scdeco.cop(y, x, marginals, w = NULL, n.mcmc = 5000, burn = 1000, thin = 10)
 \item{burn}{how many of the mcmc iterations to burn}
 
 \item{thin}{how much to thin the mcmc iterations}
+
+\item{offset1}{(optional) offset for link(mu1)}
+
+\item{offset2}{(optional) offset for link(mu2)}
 }
 \value{
 matrix with mcmc samples as rows and columns corresponding to the different parameters

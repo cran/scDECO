@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -390,7 +390,7 @@ used in regressing the correlation parameter of the scdeco.pg model.</p>
 <span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; Graph information:</span></span>
 <span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;    Observed stochastic nodes: 7500</span></span>
 <span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;    Unobserved stochastic nodes: 12508</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;    Total graph size: 85195</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;    Total graph size: 85189</span></span>
 <span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Initializing model</span></span>
 <span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; Warning in jags.model(IndZ.spec, data = jags_data, n.adapt = adapt_iter, :</span></span>
@@ -425,15 +425,15 @@ by looking at quantiles of these MCMC samples.</p>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">colnames</span>(boundsmat) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;lower&quot;</span>, <span class="st">&quot;true&quot;</span>, <span class="st">&quot;est&quot;</span>, <span class="st">&quot;upper&quot;</span>)</span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>boundsmat</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;                  lower  true        est       upper</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; inverphi[1]  0.9843169  0.25  1.0662923  5.82024138</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; inverphi[2]  0.9247351  0.25  1.1927816  2.33034870</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; inverphi3    4.5388303  7.00  5.4512712  6.47353934</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; mu[1]       15.9797522 15.00 23.4592553 25.10481958</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; mu[2]       20.7173956 15.00 24.8036386 27.20988191</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; mu3          6.5832391  7.00  6.9110345  7.21954137</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; tau0        -1.5473020 -2.00 -0.5683481 -0.05878521</span></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; tau1         0.0600569  0.40  0.1137417  0.25795315</span></span></code></pre></div>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;                   lower  true         est      upper</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; inverphi[1]  1.01272422  0.25  1.17762252  2.1147076</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; inverphi[2]  0.99896820  0.25  1.20980148  1.4311408</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; inverphi3    4.88494408  7.00  6.04111112  7.3648404</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; mu[1]       17.65959014 15.00 21.60941342 23.4024295</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; mu[2]       23.19726380 15.00 25.36187005 26.4593653</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; mu3          6.61883179  7.00  6.95004138  7.0503683</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; tau0        -0.57639800 -2.00 -0.26963729  1.0206063</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; tau1        -0.04244406  0.40  0.05641879  0.1423959</span></span></code></pre></div>
 </div>
 <div id="model-details" class="section level2">
 <h2>Model Details</h2>

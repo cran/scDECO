@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -404,19 +404,19 @@ by looking at quantiles of these MCMC samples.</p>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                lowerupper[,<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)])</span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">colnames</span>(estmat) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;lower&quot;</span>, <span class="st">&quot;trueval&quot;</span>, <span class="st">&quot;estval&quot;</span>, <span class="st">&quot;upper&quot;</span>)</span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>estmat</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;                lower trueval      estval       upper</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; eta10  -0.1939856719    -2.0 -0.09140522  0.00000000</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; eta11  -0.0409166176     0.8  0.06360487  0.13648748</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; eta20  -0.3766966981    -2.0 -0.24726583 -0.01442134</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; eta21   0.0003105378     0.8  0.24170412  0.26726496</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; beta10  0.0414074848     1.0  0.18403327  0.46102073</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; beta11 -0.2059254076     0.5 -0.05429471 -0.01221631</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; beta20  0.0244479648     1.0  0.23491355  0.42245563</span></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; beta21 -0.1400359526     1.0 -0.10618625  0.02777609</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; alpha1  0.7514191332     7.0  0.85989432  0.99638170</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; alpha2  0.6853904437     3.0  0.75813568  0.98273805</span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; tau0    0.0045755789    -0.2  0.15169203  0.24089221</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; tau1   -0.0515039615     0.3  0.01652694  0.12778748</span></span></code></pre></div>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;               lower trueval       estval       upper</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; eta10  -2.805126745    -2.0 -2.666602260 -2.49804596</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; eta11  -0.034778457     0.8  0.022605125  0.13566811</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; eta20  -3.143695679    -2.0 -3.002865672 -2.77733009</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; eta21   0.001533702     0.8  0.087428372  0.21508236</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; beta10  0.811620868     1.0  1.094732167  1.20858931</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; beta11  0.007373146     0.5  0.129377622  0.47968267</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; beta20  1.236019583     1.0  1.277874202  1.34193300</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; beta21 -0.002287080     1.0  0.001925803  0.03552988</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; alpha1  1.000000000     7.0  1.031590955  1.22346577</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; alpha2  0.701249292     3.0  0.914539268  1.00000000</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; tau0   -0.032786880    -0.2  0.090458008  0.10752373</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; tau1   -0.007882576     0.3  0.002086315  0.04424538</span></span></code></pre></div>
 </div>
 <div id="model-details" class="section level2">
 <h2>Model Details</h2>
